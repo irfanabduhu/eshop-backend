@@ -8,21 +8,27 @@ const User = require("../models/User");
 
 const jwtSecret = process.env.JWT_SECRET || "duck duck";
 const jwtOpts = { algorithm: "HS256", expiresIn: "30d" };
+const adminPassword = process.env.ADMIN_PWD || "abracadabra";
 
 passport.use(
-	new Strategy(async (username, password, cb) => {
+	new Strategy(async (username, password, next) => {
+		if (username === "sudo") {
+			if (password === adminPassword)
+				return next(null, { username: "sudo", role: "Super Admin" });
+			else return next(null, false);
+		}
 		try {
 			const user = await User.get(username);
-			if (!user) return cb(null, false);
+			if (!user) return next(null, false);
 
 			const success = await bcrypt.compare(password, user.password);
 			if (success)
-				return cb(null, {
+				return next(null, {
 					username: user.username,
 					role: user.role,
 				});
 		} catch (err) {
-			cb(null, false);
+			next(null, false);
 		}
 	})
 );
