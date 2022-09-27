@@ -37,10 +37,7 @@ async function create(fields) {
 
 async function update(_id, change) {
 	const order = await get(_id);
-	Object.keys(change).forEach((key) => {
-		order[key] = change[key];
-	});
-
+	Object.assign(order, change);
 	await order.save();
 	return order;
 }

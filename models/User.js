@@ -29,7 +29,7 @@ async function getAll({ offset = 0, limit = 25 }) {
 	return users;
 }
 
-async function get(_id) {
+async function get(username) {
 	const user = await User.findOne({ username });
 	return user;
 }
@@ -40,7 +40,7 @@ async function remove(username) {
 
 async function create(fields) {
 	const hashed = await hashPassword(fields["password"]);
-	Object.assign(fields, { password: hased });
+	Object.assign(fields, { password: hashed });
 	const user = new User(fields);
 	await user.save();
 	return user;
@@ -51,10 +51,7 @@ async function updateInfo(username, change) {
 	if (change.password) {
 		change.password = await hashPassword(change.password);
 	}
-	Object.keys(change).forEach((key) => {
-		if (key == "role") return;
-		user[key] = change[key];
-	});
+	Object.assign(user, change, { role: user.role });
 	await user.save();
 	return user;
 }

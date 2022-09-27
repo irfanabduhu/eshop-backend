@@ -8,7 +8,7 @@ const Product = db.model("Product", {
 	category: { type: [String], index: true },
 	description: { type: String },
 	price: { type: Number },
-	img: urlSchema({ required: true }),
+	image: urlSchema({ required: true }),
 	inStock: { type: Number },
 });
 
@@ -33,10 +33,7 @@ async function create(fields) {
 
 async function update(_id, change) {
 	const product = await get(_id);
-	Object.keys(change).forEach((key) => {
-		product[key] = change[key];
-	});
-
+	Object.assign(product, change);
 	await product.save();
 	return product;
 }
