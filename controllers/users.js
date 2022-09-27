@@ -1,9 +1,10 @@
+const { autoCatch } = require("../middlewares");
 const User = require("../models/User");
 
 async function get(req, res, next) {
 	const { username } = req.params;
 	const user = await User.get(username);
-	if (!user) return next();
+	if (!user || user.username !== req?.user?.username) return next();
 	res.status(200).json(user);
 }
 
@@ -16,7 +17,9 @@ async function getAll(req, res) {
 	res.json(users);
 }
 
-async function create(req, res) {
+async function createUser(req, res) {
+	const fields = req.body;
+	fields["role"] = "User";
 	const user = await User.create(req.body);
 	res.json(user);
 }
@@ -41,11 +44,11 @@ async function remove(req, res) {
 	res.json({ success: true });
 }
 
-module.exports = {
+module.exports = autoCatch({
 	get,
 	getAll,
-	create,
+	createUser,
 	updateInfo,
 	updateRole,
 	remove,
-};
+});

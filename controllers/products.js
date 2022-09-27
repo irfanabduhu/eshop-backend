@@ -1,3 +1,4 @@
+const { autoCatch } = require("../middlewares");
 const Products = require("../models/Product");
 
 async function get(req, res, next) {
@@ -34,10 +35,10 @@ async function remove(req, res) {
 	res.status(200).json({ success: true });
 }
 
-module.exports = {
+module.exports = autoCatch({
 	get,
 	getAll,
 	create,
 	update,
 	remove,
-};
+});

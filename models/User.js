@@ -1,8 +1,7 @@
 const cuid = require("cuid");
-const { Schema } = require("mongoose");
 const { isEmail, isAlphanumeric } = require("validator");
+const bcrypt = require("bcrypt");
 const db = require("../db/index");
-const { hashPassword } = require("../auth/index");
 
 const User = db.model("User", {
 	_id: { type: String, default: cuid },
@@ -16,12 +15,6 @@ const User = db.model("User", {
 		enum: ["User", "Admin", "Super Admin"],
 		default: "User",
 	},
-	orders: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: "Order",
-		},
-	],
 });
 
 async function getAll({ offset = 0, limit = 25 }) {
@@ -48,6 +41,7 @@ async function create(fields) {
 
 async function updateInfo(username, change) {
 	const user = await get(username);
+	if (req.user.username != username) return next();
 	if (change.password) {
 		change.password = await hashPassword(change.password);
 	}
@@ -90,6 +84,15 @@ function usernameSchema() {
 			},
 		],
 	};
+}
+
+async function hashPassword(str) {
+	if (str?.length >= 8) {
+		const SALT_ROUNDS = +process.env.SALT_ROUNDS || 10;
+		const hash = await bcrypt.hash(str, SALT_ROUNDS);
+		return hash;
+	}
+	throw new Error("password must be at least 8 characters long");
 }
 
 module.exports = {
